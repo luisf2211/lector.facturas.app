@@ -16,6 +16,7 @@
     "@mui/material": "^5.16.4",
     "axios": "^1.7.2",
     "blob": "^0.1.0",
+    "dotenv": "^16.4.5",
     "formidable": "^3.5.1",
     "mui-file-input": "^4.0.6",
     "next": "14.2.5",
