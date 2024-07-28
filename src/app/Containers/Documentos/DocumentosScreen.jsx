@@ -6,6 +6,7 @@ import { Button, Snackbar } from '@mui/material';
 import { validateScreen } from '@/app/utils/validateScreen';
 import { LoadingButton } from '@mui/lab';
 import Alert from '@mui/material/Alert';
+import { POST, validateResponseStatus } from '@/app/config/configAPI';
 
 function DocumentosScreen() {
   const [file, setFile] = useState(null);
@@ -13,7 +14,10 @@ function DocumentosScreen() {
   const isMobile = validateScreen();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [mensaje, setMensaje] = useState('');
+  const [snackBar, setSnackBar ] = useState({ 
+    severity: 'info',
+    mensaje: ''
+  });
   const handleImageChange = (acceptedFiles) => {
     const file = acceptedFiles[0];
     if (!file) {
@@ -43,13 +47,44 @@ function DocumentosScreen() {
 
   const handlerRemoveFile = () => setFile(null);
 
-  const handleLoadFile = () => {
-    setIsLoading(true);
-    setOpen(true);
-    setMensaje('Cargando archivo');
-    setTimeout(() => {
+  const handleLoadFile = async () => {
+    try {
+      setIsLoading(true);
+
+      const formData = new FormData();
+      formData.append('receipt', file);
+
+      setOpen(true);
+      setSnackBar({
+        mensaje: 'Cargando archivo.',
+        severity: 'info'
+      });
+
+      const responseUploadFile = (await POST('/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      ));
+
+      if(validateResponseStatus(responseUploadFile).ok){
+        setSnackBar({
+          mensaje: 'Lectura de archivo exitosa.',
+          severity: 'success'
+        });
+        return;
+      }
+
+    } catch (error) {
       setIsLoading(false);
-    }, 3000);
+        setOpen(true);
+        return setSnackBar({
+          mensaje: 'Ocurrio un error al intentar cargar el archivo.',
+          severity: 'error'
+        });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleClose = (event, reason) => {
@@ -58,7 +93,6 @@ function DocumentosScreen() {
     }
     setOpen(false);
   };
-
   return (
     <div style={{padding: 50}}>
       <Snackbar
@@ -69,8 +103,9 @@ function DocumentosScreen() {
       >
         <Alert 
           variant={isMobile ? "filled" : "outlined"} 
-          severity="info">
-          {mensaje}
+          severity={snackBar.severity}
+          >
+          {snackBar.mensaje}
         </Alert>
       </Snackbar>
       
