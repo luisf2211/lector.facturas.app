@@ -10,21 +10,21 @@ const PUT = (url, data, config = {}) => apiClient.put(url, data, config);
 const DELETE = (url, config = {}) => apiClient.delete(url, config);
 
 const validateResponseStatus = (request) => {
-    if(request.response.status >= 200 && request.response.status <= 300){
+    if(request.status >= 200 && request.status <= 300){
         return {
             ok: true,
             created: true
         };
     }
 
-    if(request.response.status >= 400 && request.response.status <= 500){
+    if(request.status >= 400 && request.status <= 500){
         return {
             badRequest: true,
             notFound: true
         };
     }
 
-    if(request.response.status > 500 && request.response.status <= 600){
+    if(request.status > 500 && request.status <= 600){
         return {
             serverError: true,
             timeout: true

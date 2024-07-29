@@ -76,7 +76,7 @@ function DocumentosScreen() {
       }
 
     } catch (error) {
-      setIsLoading(false);
+        setIsLoading(false);
         setOpen(true);
         return setSnackBar({
           mensaje: 'Ocurrio un error al intentar cargar el archivo.',
