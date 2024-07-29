@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
 import Blob from 'blob';
 export async function POST(req) {
     try {
@@ -11,18 +9,12 @@ export async function POST(req) {
             return  NextResponse.json({ response: 'Debes adjuntar un archivo.' }, {status: 400});
         }
         
-        const validateFile = validateFileType(file);
+       const validateFile = validateFileType(file);
         if(!validateFile.isValid){
             return  NextResponse.json({ response: validateFile.message }, {status: 400});
         }
 
-        const responseUploadFile = await uploadFile(file);
-        if (!responseUploadFile.isUploaded) {
-            return NextResponse.json({ response: responseUploadFile.message }, {status: 400});    
-        }
-
-        const responseReadReceipt = await readReceipt(responseUploadFile.file_path);
-
+        const responseReadReceipt = await readReceipt(file);
         if (responseReadReceipt.status >= 200 && responseReadReceipt.status <= 300) {
             const dataResponseReadReceipt = await responseReadReceipt.json(); 
             console.log(dataResponseReadReceipt);
@@ -52,38 +44,11 @@ const validateFileType = (file) => {
     }
 }
 
-const uploadFile = async (file) => {
-    try {
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        const filePath = path.join(uploadDir, file.name);
-        const buffer = await file.arrayBuffer();
-        fs.writeFileSync(filePath, Buffer.from(buffer));
-        console.log('File uploaded and saved to', filePath);
-        return {
-            isUploaded: true,
-            message: 'file uploaded',
-            file_path: filePath
-        }
-    } catch (error) {
-        console.error(error);
-        return {
-            isUploaded: false,
-            message: 'file not uploaded'
-        }    
-    }
-}
-
-const readReceipt = async (path) => {
+const readReceipt = async (file) => {
     try {
         const formdata = new FormData();
-        const fileBuffer = fs.readFileSync(path);
-        const blob = new Blob([fileBuffer]);
-        formdata.append("receipt", blob, path);
-        const requestOptions = {
-            method: "POST",
-            body: formdata,
-            redirect: "follow"
-        };
+        const blob = new Blob([file]);
+        formdata.append("receipt", blob);
 
         const response = await fetch("http://ocr.asprise.com/api/v1/receipt", {
             method: 'POST',
